@@ -1,0 +1,7 @@
+{
+  "name": "アグリ・アドバイザー (Agri-Advisor)",
+  "description": "AIとセンサーデータで農作物の健康状態を診断し、最適な育て方をアドバイスするスマート農業支援アプリ",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
