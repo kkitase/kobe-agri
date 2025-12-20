@@ -97,6 +97,26 @@ graph TD
    ```
    ※ `.env.local` に設定された `GEMINI_API_KEY` がビルド時に注入されます。
 
+## セキュリティ・ベストプラクティス (重要)
+
+このアプリはフロントエンドから直接 Gemini API を呼び出すため、公開時には以下のセキュリティ対策を強く推奨します。
+
+### 1. API キーの制限 (Google Cloud コンソール)
+
+API キーが第三者に盗用されるのを防ぐため、[Google Cloud Console](https://console.cloud.google.com/apis/credentials) または [Google AI Studio](https://aistudio.google.com/app/apikey) で以下の制限を設定してください。
+
+- **アプリケーションの制限**: 「HTTP リファラー」を選択し、以下のドメインを許可リストに追加します。
+  - `http://localhost:3000/*` (ローカル開発用)
+  - `https://your-app-name-*.a.run.app/*` (Cloud Run のデプロイ先URL)
+- **API の制限**: 「Gemini API」のみに使用を制限します。
+
+### 2. 今後の検討事項 (本格運用向け)
+
+プロジェクトが成長し、より高いセキュリティが必要な場合は、以下の構成への移行を検討してください。
+
+- **バックエンド・プロキシの導入**: Cloud Run 上で API キーを保持し、フロントエンドからのリクエストを中継する仕組み。これにより、ブラウザ側に API キーが露出することを完全に防げます。
+- **Google Cloud Secret Manager**: API キーを Cloud Build や Dockerfile に直接含めるのではなく、Secret Manager から安全に取得する構成。
+
 ## プロジェクト構成
 
 ```
