@@ -71,15 +71,12 @@ graph TD
 
 ```
 kobe-agri/
+├── public/
+│   └── sample/              # サンプル画像・データ
+│       ├── sensor_optimal.json
+│       ├── sensor_dry.csv
+│       └── *.jpeg           # 各種画像
 ├── src/
-│   ├── App.tsx              # メインアプリ コンポーネント
-│   ├── main.tsx             # エントリーポイント
-│   ├── index.css            # スタイル
-│   └── services/
-│       └── geminiService.ts # Gemini API 連携
-├── sample/                  # サンプル画像・データ
-│   ├── sensor_optimal.json  # 正常なセンサーデータ (JSON)
-│   └── sensor_dry.csv       # 乾燥気味のセンサーデータ (CSV)
 ├── index.html
 └── package.json
 ```
