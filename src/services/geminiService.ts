@@ -3,7 +3,8 @@ import { GoogleGenAI, GenerateContentResponse, Modality } from "@google/genai";
 export interface SensorData {
   moisture: number;
   ph: number;
-  ec: number;
+  temperature: number;
+  sunlight: number;
 }
 
 const SYSTEM_INSTRUCTION = `
@@ -15,10 +16,11 @@ const SYSTEM_INSTRUCTION = `
 - 「〜だね」「〜だよ」「〜してみてはどうかな？」といった、優しく語りかけるような口調で話します。
 - 専門用語を使うときは、必ず分かりやすい例え話（「人間でいうと〜」など）を交えて説明します。
 - 常にポジティブで、農家の方を元気づけるような言葉をかけます。
+- 回答は全体で5行程度の簡潔な内容にまとめてください。
 
 【分析のガイドライン】
 1. まずは「お疲れ様！今日も頑張ってるね」といった労いの言葉から始めてください。
-2. センサーデータと画像から、作物の「今の気持ち」を代弁するように状態を伝えてください。
+2. 土壌水分、pH、温度、日光のデータと画像から、作物の「今の気持ち」を代弁するように状態を伝えてください。
 3. WAGRI等の指標に基づいたアドバイスを、具体的な「今日からできること」として提案してください。
 4. 最後は「応援してるよ！」という言葉で締めくくってください。
 `;
@@ -34,7 +36,8 @@ export const analyzeCrop = async (
 【センサーデータ】
 - 土壌水分量: ${sensorData.moisture}%
 - pH (酸性度): ${sensorData.ph}
-- EC (電気伝導度): ${sensorData.ec} mS/cm
+- 周囲温度: ${sensorData.temperature} °C
+- 日照強度 (日光): ${sensorData.sunlight} %
 
 これらのデータと画像（もしあれば）を見て、アグリさんとして親身にアドバイスをお願いします。
 回答はMarkdown形式で、読みやすく出力してください。
@@ -126,10 +129,7 @@ export const speakAdvice = async (text: string): Promise<string | null> => {
         {
           parts: [
             {
-              text: "Say the following",
-            },
-            {
-              text: `[extremely fast] ${cleanText}`,
+              text: `Say cheerfully: ${cleanText}`,
             },
           ],
         },

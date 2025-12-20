@@ -13,6 +13,9 @@ import {
   Leaf,
   Volume2,
   VolumeX,
+  FileJson,
+  Cpu,
+  Sun,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import ReactMarkdown from "react-markdown";
@@ -22,7 +25,8 @@ const App: React.FC = () => {
   const [sensorData, setSensorData] = useState<SensorData>({
     moisture: 40,
     ph: 6.5,
-    ec: 1.2,
+    temperature: 24,
+    sunlight: 70,
   });
   const [image, setImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -31,6 +35,7 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const sensorFileInputRef = useRef<HTMLInputElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,7 +82,10 @@ const App: React.FC = () => {
   const handleSpeak = async () => {
     if (!advice) return;
     if (audioUrl) {
-      audioRef.current?.play();
+      if (audioRef.current) {
+        setIsSpeaking(true);
+        audioRef.current.play();
+      }
       return;
     }
 
@@ -96,11 +104,66 @@ const App: React.FC = () => {
   };
 
   const reset = () => {
-    setSensorData({ moisture: 40, ph: 6.5, ec: 1.2 });
+    setSensorData({ moisture: 40, ph: 6.5, temperature: 24, sunlight: 70 });
     setImage(null);
     setAdvice(null);
     setError(null);
+    setIsSpeaking(false);
     setAudioUrl(null);
+  };
+
+  const handleSensorImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      try {
+        if (file.name.endsWith(".json")) {
+          const data = JSON.parse(content);
+          if (
+            typeof data.moisture === "number" &&
+            typeof data.ph === "number" &&
+            typeof data.temperature === "number" &&
+            typeof data.sunlight === "number"
+          ) {
+            setSensorData(data);
+          } else {
+            throw new Error("Invalid JSON format");
+          }
+        } else if (file.name.endsWith(".csv")) {
+          const lines = content.split("\n");
+          if (lines.length >= 2) {
+            const values = lines[1].split(",");
+            if (values.length >= 4) {
+              setSensorData({
+                moisture: parseFloat(values[0]),
+                ph: parseFloat(values[1]),
+                temperature: parseFloat(values[2]),
+                sunlight: parseFloat(values[3]),
+              });
+            } else {
+              throw new Error("Invalid CSV format");
+            }
+          }
+        }
+      } catch (err) {
+        setError("データのインポートに失敗しました。形式を確認してください。");
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const simulateDeviceLink = () => {
+    // リアルな数値をシミュレート
+    const simulatedData = {
+      moisture: Math.floor(Math.random() * 60) + 20,
+      ph: parseFloat((Math.random() * 1 + 6).toFixed(1)),
+      temperature: Math.floor(Math.random() * 15) + 15,
+      sunlight: Math.floor(Math.random() * 50) + 50,
+    };
+    setSensorData(simulatedData);
   };
 
   return (
@@ -173,10 +236,37 @@ const App: React.FC = () => {
             transition={{ delay: 0.1 }}
             className="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100 space-y-6"
           >
-            <h3 className="text-lg font-bold flex items-center gap-2">
-              <Info className="text-emerald-500 w-5 h-5" />
-              センサー数値を入力
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold flex items-center gap-2">
+                <Info className="text-emerald-500 w-5 h-5" />
+                センサー数値を入力
+              </h3>
+              <div className="flex gap-2">
+                <button
+                  onClick={simulateDeviceLink}
+                  className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors border border-emerald-100 flex items-center gap-1.5 text-xs font-bold"
+                  title="デバイスから取得"
+                >
+                  <Cpu className="w-3.5 h-3.5" />
+                  連携
+                </button>
+                <button
+                  onClick={() => sensorFileInputRef.current?.click()}
+                  className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors border border-emerald-100 flex items-center gap-1.5 text-xs font-bold"
+                  title="ファイルを読み込む"
+                >
+                  <FileJson className="w-3.5 h-3.5" />
+                  外部データ
+                </button>
+                <input
+                  type="file"
+                  ref={sensorFileInputRef}
+                  onChange={handleSensorImport}
+                  accept=".json,.csv"
+                  className="hidden"
+                />
+              </div>
+            </div>
 
             <div className="space-y-4">
               <div>
@@ -236,22 +326,47 @@ const App: React.FC = () => {
                 <label className="flex items-center justify-between mb-2 text-sm font-medium">
                   <span className="flex items-center gap-2">
                     <Thermometer className="text-orange-500 w-4 h-4" />
-                    EC (電気伝導度)
+                    温度 (°C)
                   </span>
                   <span className="text-emerald-600 font-bold">
-                    {sensorData.ec} mS/cm
+                    {sensorData.temperature} °C
                   </span>
                 </label>
                 <input
                   type="range"
                   min="0"
-                  max="5"
-                  step="0.1"
-                  value={sensorData.ec}
+                  max="50"
+                  step="1"
+                  value={sensorData.temperature}
                   onChange={(e) =>
                     setSensorData({
                       ...sensorData,
-                      ec: parseFloat(e.target.value),
+                      temperature: parseInt(e.target.value),
+                    })
+                  }
+                  className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="flex items-center justify-between mb-2 text-sm font-medium">
+                  <span className="flex items-center gap-2">
+                    <Sun className="text-yellow-500 w-4 h-4" />
+                    日光 (日照強度 %)
+                  </span>
+                  <span className="text-emerald-600 font-bold">
+                    {sensorData.sunlight}%
+                  </span>
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={sensorData.sunlight}
+                  onChange={(e) =>
+                    setSensorData({
+                      ...sensorData,
+                      sunlight: parseInt(e.target.value),
                     })
                   }
                   className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-500"
@@ -418,18 +533,30 @@ const App: React.FC = () => {
                 </div>
                 <button
                   onClick={handleSpeak}
-                  disabled={isSpeaking}
-                  className={`p-3 rounded-full transition-all ${
+                  disabled={isSpeaking && !audioUrl}
+                  className={`p-3 rounded-full transition-all flex items-center gap-2 ${
                     isSpeaking
-                      ? "bg-emerald-100 text-emerald-600 animate-pulse"
+                      ? "bg-emerald-100 text-emerald-600 shadow-inner"
                       : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
                   }`}
                   title="アドバイスを聴く"
                 >
-                  {isSpeaking ? (
-                    <Volume2 className="w-6 h-6" />
+                  {isSpeaking && !audioUrl ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span className="text-xs font-bold px-1">生成中...</span>
+                    </>
                   ) : (
-                    <Volume2 className="w-6 h-6" />
+                    <>
+                      <Volume2
+                        className={`w-5 h-5 ${isSpeaking ? "animate-pulse" : ""}`}
+                      />
+                      {isSpeaking && (
+                        <span className="text-xs font-bold px-1 italic">
+                          再生中...
+                        </span>
+                      )}
+                    </>
                   )}
                 </button>
               </div>
@@ -449,7 +576,10 @@ const App: React.FC = () => {
                   {sensorData.ph}
                 </div>
                 <div className="bg-orange-50 px-4 py-2 rounded-full text-sm font-medium text-orange-700 flex items-center gap-2">
-                  <Thermometer className="w-4 h-4" /> EC: {sensorData.ec}
+                  <Thermometer className="w-4 h-4" /> 温度: {sensorData.temperature}°C
+                </div>
+                <div className="bg-yellow-50 px-4 py-2 rounded-full text-sm font-medium text-yellow-700 flex items-center gap-2">
+                  <Sun className="w-4 h-4" /> 日光: {sensorData.sunlight}%
                 </div>
               </div>
 

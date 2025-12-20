@@ -1,20 +1,89 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# アグリ・アドバイザー (Agri-Advisor)
 
-# Run and deploy your AI Studio app
+AI とセンサーデータで農作物の健康状態を診断し、最適な育て方をアドバイスするスマート農業支援アプリです。
 
-This contains everything you need to run your app locally.
+## 特徴
 
-View your app in AI Studio: https://aistudio-preprod.corp.google.com/apps/50b986d1-8312-4212-8702-3929e48f2717
+🌱 **AI 診断** - Gemini を使用して作物の画像とセンサーデータを分析  
+📊 **センサー連携** - 土壌水分量、pH、EC（電気伝導度）を入力して総合的な診断  
+📷 **画像認識** - 作物の写真をアップロードして葉の状態を確認  
+🔊 **音声アドバイス** - 診断結果を Gemini TTS で読み上げ  
+👨‍🌾 **アグリさん** - ベテラン農家キャラクターが親身にアドバイス
 
-## Run Locally
+## 技術スタック
 
-**Prerequisites:**  Node.js
+- **フロントエンド**: React 19 + TypeScript
+- **UI**: TailwindCSS 4 + Motion (Framer Motion)
+- **AI**: Gemini API (`gemini-3-flash-preview` / `gemini-2.5-flash-preview-tts`)
+- **ビルド**: Vite 6
 
+## アーキテクチャ
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+アプリは React (Vite) で構成され、Gemini API と直接通信します。
+
+```mermaid
+graph TD
+    User([ユーザー])
+    UI[React Frontend]
+    Service[Gemini Service]
+    API_V[Gemini 1.5 Flash]
+    API_T[Gemini 2.5 Flash TTS]
+
+    User -->|入力・画像| UI
+    UI --> Service
+    Service -->|分析リクエスト| API_V
+    API_V -->|アドバイス Markdown| Service
+    Service -->|音声生成リクエスト| API_T
+    API_T -->|PCM データの返却| Service
+    Service -->|WAV 変換| UI
+    UI -->|表示・再生| User
+```
+
+## ローカル実行
+
+**必要条件**: Node.js
+
+1. 依存関係をインストール:
+   ```bash
+   npm install
+   ```
+
+2. `.env.local` に Gemini API キーを設定:
+   ```
+   GEMINI_API_KEY=your_api_key_here
+   ```
+
+3. アプリを起動:
+   ```bash
+   npm run dev
+   ```
+
+4. ブラウザで http://localhost:3000 を開く
+
+## 使い方
+
+1. **センサー数値を入力** - スライダーで土壌水分量、pH、温度、日光を調整
+2. **作物の写真をアップロード** - カメラで撮影またはサンプル写真を選択
+3. **「アグリさんに相談する」をクリック** - AI が診断結果とアドバイスを表示
+4. **音声で聴く** - スピーカーボタンでアドバイスを読み上げ
+
+## プロジェクト構成
+
+```
+kobe-agri/
+├── src/
+│   ├── App.tsx              # メインアプリ コンポーネント
+│   ├── main.tsx             # エントリーポイント
+│   ├── index.css            # スタイル
+│   └── services/
+│       └── geminiService.ts # Gemini API 連携
+├── sample/                  # サンプル画像・データ
+│   ├── sensor_optimal.json  # 正常なセンサーデータ (JSON)
+│   └── sensor_dry.csv       # 乾燥気味のセンサーデータ (CSV)
+├── index.html
+└── package.json
+```
+
+## ライセンス
+
+© 2025 アグリ・アドバイザー
