@@ -30,8 +30,8 @@ graph TD
     User([ユーザー])
     UI[React Frontend]
     Service[Gemini Service]
-    API_V[Gemini 1.5 Flash]
-    API_T[Gemini 2.5 Flash TTS]
+    API_V[Gemini 2.0 Flash]
+    API_T[Gemini 2.0 Flash TTS]
 
     User -->|入力・画像| UI
     UI --> Service
