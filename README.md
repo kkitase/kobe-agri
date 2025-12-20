@@ -18,7 +18,7 @@ AI とセンサーデータで農作物の健康状態を診断し、最適な�
 
 - **フロントエンド**: React 19 + TypeScript
 - **UI**: TailwindCSS 4 + Motion (Framer Motion)
-- **AI**: Gemini API (`gemini-2.0-flash-exp` / `gemini-2.0-flash-exp-tts`)
+- **AI**: Gemini API (`gemini-3-flash-preview` / `gemini-2.5-flash-preview-tts`)
 - **ビルド**: Vite 6
 
 ## アーキテクチャ
@@ -30,8 +30,8 @@ graph TD
     User([ユーザー])
     UI[React Frontend]
     Service[Gemini Service]
-    API_V[Gemini 2.0 Flash]
-    API_T[Gemini 2.0 Flash TTS]
+    API_V[Gemini 3.0 Flash]
+    API_T[Gemini 2.5 Flash TTS]
 
     User -->|入力・画像| UI
     UI --> Service
