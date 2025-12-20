@@ -15,14 +15,17 @@ if [ -z "$GEMINI_API_KEY" ]; then
   exit 1
 fi
 
-echo "Deploying $SERVICE_NAME to $PROJECT_ID in $REGION..."
+echo "Step 1: Building container with API key using Cloud Build..."
+IMAGE_URL="gcr.io/$PROJECT_ID/$SERVICE_NAME"
 
-# Cloud Run にデプロイ
-# --set-build-env-vars を使用して、ビルド時に API キーを注入（Vite のビルドに必要）
+# Build with build-arg to bake the API key into the Vite bundle via cloudbuild.yaml
+gcloud builds submit --config=cloudbuild.yaml \
+  --substitutions=_GEMINI_API_KEY=$GEMINI_API_KEY
+
+echo "Step 2: Deploying to Cloud Run..."
 gcloud run deploy $SERVICE_NAME \
-  --source . \
+  --image $IMAGE_URL \
   --region $REGION \
-  --set-build-env-vars GEMINI_API_KEY=$GEMINI_API_KEY \
   --allow-unauthenticated
 
 echo "Deployment complete!"
