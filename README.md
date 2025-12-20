@@ -79,8 +79,18 @@ graph TD
    - Google Cloud プロジェクトの作成と `gcloud` CLI の設定。
    - Cloud Build および Cloud Run API の有効化。
 
-2. **デプロイの実行**:
-   リポジトリに含まれる `deploy_gcp.sh` を使用してデプロイできます。このスクリプトは Cloud Build を使用してイメージをビルドし、Cloud Run にデプロイします。
+### デプロイ・スクリプト (`deploy_gcp.sh`) の詳細
+   
+   リポジトリに含まれる `deploy_gcp.sh` は、以下の 2 つのステップを自動化します。
+   
+   1.  **Google Cloud Build によるビルド**:
+       - `.env.local` から `GEMINI_API_KEY` を読み込みます。
+       - `cloudbuild.yaml` を使用して、Docker イメージをビルドします。
+       - ビルド時に `--build-arg` を介して API キーを Vite のビルドプロセスに注入します。これで、フロントエンドから API キーが利用可能になります。
+   2.  **Google Cloud Run へのデプロイ**:
+       - ビルドされたイメージを Cloud Run にデプロイします。
+       - `--allow-unauthenticated` フラグにより、公開アクセス可能な状態でサービスを起動します。
+   
    ```bash
    chmod +x deploy_gcp.sh
    ./deploy_gcp.sh
