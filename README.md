@@ -71,7 +71,23 @@ graph TD
 3. **「アグリさんに相談する」をクリック** - AI が診断結果とアドバイスを表示
 4. **音声で聴く** - スピーカーボタンでアドバイスを読み上げ
 
-## プロジェクト構成
+## デプロイ (Google Cloud Run)
+64: 
+65: このアプリは Docker 化されており、Google Cloud Run へのデプロイが可能です。
+66: 
+67: 1. **事前準備**:
+68:    - Google Cloud プロジェクトの作成と `gcloud` CLI の設定。
+69:    - Cloud Build および Cloud Run API の有効化。
+70: 
+71: 2. **デプロイの実行**:
+72:    リポジトリに含まれる `deploy_gcp.sh` を使用してデプロイできます。このスクリプトは Cloud Build を使用してイメージをビルドし、Cloud Run にデプロイします。
+73:    ```bash
+74:    chmod +x deploy_gcp.sh
+75:    ./deploy_gcp.sh
+76:    ```
+77:    ※ `.env.local` に設定された `GEMINI_API_KEY` がビルド時に注入されます。
+78: 
+79: ## プロジェクト構成
 
 ```
 kobe-agri/
