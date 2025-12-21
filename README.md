@@ -1,5 +1,7 @@
 # アグリ・アドバイザー (Agri-Advisor)
 
+![Agri-Advisor Architecture](./public/architecture.png)
+
 AI とセンサーデータで作物の健康診断を行い、日々の農作業を「ライフログ」として蓄積・分析することで、持続可能な農業を支援する次世代のスマート農業アプリです。
 
 ## 特徴
@@ -24,25 +26,38 @@ AI とセンサーデータで作物の健康診断を行い、日々の農作�
 
 ## アーキテクチャ
 
-アプリは React (Vite) で構成され、Gemini API と直接通信します。
+このアプリは React (Vite) で構成され、Google Cloud の信頼性の高いマネージド・サービスを組み合わせて、日々の農作業を確実にサポートします。
 
-```mermaid
 graph TD
-    User([ユーザー])
-    UI[React Frontend]
-    Service[Gemini Service]
-    API_V[Gemini 3.0 Flash]
-    API_T[Gemini 2.5 Flash TTS]
+    subgraph "🌱 ユーザー環境 (Local)"
+        User["👨‍🌾 農家さん"]
+        Device["📱 スマートフォン / PC"]
+        Sensors["🌡️ センサー (水分, pH, 温度)"]
+        Camera["📷 カメラ (作物撮影)"]
+    end
 
-    User -->|入力・画像| UI
-    UI --> Service
-    Service -->|分析リクエスト| API_V
-    API_V -->|アドバイス Markdown| Service
-    Service -->|音声生成リクエスト| API_T
-    API_T -->|PCM データの返却| Service
-    Service -->|WAV 変換| UI
-    UI -->|表示・再生| User
-```
+    subgraph "🚀 フロントエンド (React 19 + Vite 6)"
+        UI["🎨 TailwindCSS 4 / Motion"]
+        State["🔄 診断ロジック / 状態管理"]
+    end
+
+    subgraph "☁️ Google Cloud Platform"
+        subgraph "🚀 実行基盤"
+            Run["Cloud Run (Docker)"]
+        end
+        
+        subgraph "🧠 AI サービス"
+            Gemini["Gemini API<br/>(Multimodal / TTS)"]
+        end
+    end
+
+    %% データの流れ
+    User --> Device
+    Sensors --> UI
+    Camera --> UI
+    Device <--> Run
+    Run <--> Gemini
+    Gemini -- "🔊 音声アドバイス" --> User
 
 ## ローカル実行
 
