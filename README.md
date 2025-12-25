@@ -113,36 +113,32 @@ graph TD
    ```
    ※ `.env.local` に設定された `GEMINI_API_KEY` がビルド時に注入されます。
 
-## セキュリティ・ベストプラクティス (重要)
+## セキュリティ・ベストプラクティス
 
-このアプリはフロントエンドから直接 Gemini API を呼び出すため、公開時には以下のセキュリティ対策を強く推奨します。
+このアプリはフロントエンドから直接 Gemini API を呼び出しています。
 
-### 1. API キーの制限 (Google Cloud コンソール)
+### 1. API キーの制限 (オプション)
 
-API キーが第三者に盗用されるのを防ぐため、[Google Cloud Console](https://console.cloud.google.com/apis/credentials) または [Google AI Studio](https://aistudio.google.com/app/apikey) で以下の制限を設定してください。
+API キーが第三者に盗用されるのを防ぎたい場合は、[Google Cloud Console](https://console.cloud.google.com/apis/credentials) または [Google AI Studio](https://aistudio.google.com/app/apikey) で以下の制限を設定できます。
 
-> [!IMPORTANT]
+> [!NOTE]
 > Google Cloud Console にアクセスする際、正しいプロジェクトが選択されているか確認してください。異なるプロジェクトを見ていると、API キーが表示されません。
 
-- **アプリケーションの制限**: 「HTTP リファラー」を選択し、以下のドメインを許可リストに追加します。
-  - `http://localhost:3000/*` (ローカル開発用)
-  - `https://your-app-name-*.a.run.app/*` (Cloud Run のデプロイ先URL)
-  - `https://your-app-name.vercel.app/*` (Vercel のデプロイ先URL)
-  - `https://*.vercel.app/*` (Vercel プレビュー用)
-- **API の制限**: 「Gemini API」のみに使用を制限します。
+#### HTTP リファラー制限
 
-#### Vercel デプロイ時の注意
+「アプリケーションの制限」で「HTTP リファラー」を選択し、許可するドメインを追加できます：
 
-Vercel にデプロイする場合、HTTP リファラー制限が設定されていると `API_KEY_HTTP_REFERRER_BLOCKED` エラーが発生します。以下の手順でリファラーを許可してください：
+- `http://localhost:3000/*` (ローカル開発用)
+- `https://your-app-name-*.a.run.app/*` (Cloud Run)
+- `https://your-app-name.vercel.app/*` (Vercel)
+- `https://*.vercel.app/*` (Vercel プレビュー用)
 
-1. [Google Cloud Console - 認証情報](https://console.cloud.google.com/apis/credentials) にアクセス
-2. 画面上部のプロジェクト選択で、正しいプロジェクトを選択
-3. 該当の API キーをクリック
-4. **「アプリケーションの制限」** セクションで「HTTP リファラー」を確認
-5. 以下のリファラーを追加：
-   - `https://your-app-name.vercel.app/*`
-   - `https://*.vercel.app/*` (プレビューデプロイ用)
-6. **保存** をクリックし、反映まで数分待つ
+#### API の制限
+
+使用できる API を「Gemini API」のみに制限することも可能です。
+
+> [!TIP]
+> HTTP リファラー制限を設定した場合、許可リストにないドメインからのリクエストは `API_KEY_HTTP_REFERRER_BLOCKED` エラーになります。新しい環境にデプロイする際は、そのドメインをリファラー許可リストに追加してください。
 
 ### 2. 今後の検討事項 (本格運用向け)
 
