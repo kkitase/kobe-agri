@@ -6,39 +6,49 @@ AI とセンサーデータで作物の健康診断を行い、日々の農作�
 
 ## 特徴
 
-🌱 **AI 診断** - Gemini を使用して作物の画像とセンサーデータを分析  
-📊 **センサー連携** - 土壌水分量、pH、温度を入力して総合的な診断  
-📷 **画像認識** - 作物の写真をアップロードして葉の状態を確認  
-📝 **ライフログ** - 作業記録や「気づき」を蓄積し、経験を資産化（将来機能）  
-🔊 **音声アドバイス** - 診断結果を Gemini TTS で読み上げ  
-👨‍🌾 **アグリさん** - ベテラン農家キャラクターが親身にアドバイス
+🌱 **AI 精密診断** - `gemini-3-flash-preview` を使用して作物の画像と多角的なセンサーデータを分析  
+📊 **センサー連携** - 土壌水分量、pH、温度、日照強度を入力して総合的な診断  
+📥 **データ取込** - 外部センサーから出力された JSON/CSV ファイル（`sensor_optimal.json` 等）のインポートに対応  
+📷 **画像認識** - 作物の写真をアップロードして葉の状態や病害虫の兆候を確認  
+📝 **ライフログ** - 作業記録や「気づき」を蓄積し、経験を資産化（将来機能 [FUTURE_IDEAS.md](./FUTURE_IDEAS.md) 参照）  
+🔊 **音声アドバイス** - `gemini-2.5-flash-preview-tts` による自然な音声で診断結果を読み上げ  
+👨‍🌾 **アグリさん** - 経験豊富なベテラン農家キャラクターが、親身でポジティブなアドバイスを提供
 
-## 将来的な拡張プラン (エージェンティック化)
+## 調査研究・背景資料
 
-このプロジェクトをさらに進化させるためのアイデア（マルチアドバイザー、コミュニティ共有、自律的プランニングなど）を [FUTURE_IDEAS.md](./FUTURE_IDEAS.md) にまとめています。
+このプロジェクトは、最新のスマート農業技術と市場動向の深い洞察に基づいています。詳細は [deep-research.md](./deep-research.md) を参照してください。
+
+- **現状分析**: 日本の農業における「2025年問題」と技術継承の重要性
+- **技術体系**: TDR/FDR法による土壌センシング、NDVI（植生指数）によるリモートセンシングの解説
+- **データ基盤**: 農業データ連携基盤「WAGRI」との親和性とデータエコシステム
+- **市場展望**: 2030年に向けた農業センサー市場の成長予測とROI分析
 
 ## 技術スタック
 
-- **フロントエンド**: React 19 + TypeScript
-- **UI**: TailwindCSS 4 + Motion (Framer Motion)
-- **AI**: Gemini API (`gemini-3-flash-preview` / `gemini-2.5-flash-preview-tts`)
-- **ビルド**: Vite 6
+- **フロントエンド**: [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- **UI/UX**: [TailwindCSS 4](https://tailwindcss.com/) + [Motion (Framer Motion)](https://motion.dev/)
+- **AI サービス**: [Gemini API](https://ai.google.dev/)
+  - 分析エンジン: `gemini-3-flash-preview` (System Instruction による精密なキャラクター設定)
+  - 音声合成: `gemini-2.5-flash-preview-tts` (自然な日本語音声 `Kore`)
+- **ビルドツール**: [Vite 6](https://vitejs.dev/)
 
 ## アーキテクチャ
 
-このアプリは React (Vite) で構成され、Google Cloud の信頼性の高いマネージド・サービスを組み合わせて、日々の農作業を確実にサポートします。
+このアプリは React (Vite) で構成され、Google Cloud の信頼性の高いマネージド・サービスを組み合わせて、日々の農作業を確実にサポートします。また、将来的なバックエンド拡張（Node.js/Express + SQLite）も見据えた設計になっています。
 
+```mermaid
 graph TD
     subgraph "🌱 ユーザー環境 (Local)"
         User["👨‍🌾 農家さん"]
         Device["📱 スマートフォン / PC"]
-        Sensors["🌡️ センサー (水分, pH, 温度)"]
-        Camera["📷 カメラ (作物撮影)"]
+        Sensors["🌡️ センサー (水分, pH, 温度, 日光)"]
+        Files["📄 JSON/CSV (外部データ)"]
     end
 
     subgraph "🚀 フロントエンド (React 19 + Vite 6)"
         UI["🎨 TailwindCSS 4 / Motion"]
         State["🔄 診断ロジック / 状態管理"]
+        Import["📥 データインポート処理"]
     end
 
     subgraph "☁️ Google Cloud Platform"
@@ -54,14 +64,16 @@ graph TD
     %% データの流れ
     User --> Device
     Sensors --> UI
-    Camera --> UI
+    Files --> Import
+    Import --> UI
     Device <--> Run
     Run <--> Gemini
     Gemini -- "🔊 音声アドバイス" --> User
+```
 
 ## ローカル実行
 
-**必要条件**: Node.js
+**必要条件**: Node.js 20 以上
 
 1. 依存関係をインストール:
    ```bash
@@ -82,83 +94,37 @@ graph TD
 
 ## 使い方
 
-1. **センサー数値を入力** - スライダーで土壌水分量、pH、温度、日光を調整
-2. **作物の写真をアップロード** - カメラで撮影またはサンプル写真を選択
-3. **「アグリさんに相談する」をクリック** - AI が診断結果とアドバイスを表示
-4. **音声で聴く** - スピーカーボタンでアドバイスを読み上げ
+1. **センサー数値を入力** - スライダーで現在の状態を手動入力、または **「ファイル読込」** から外部データをインポートします。
+2. **作物の写真をアップロード** - カメラで撮影、またはサンプル写真（`public/sample/`）を選択します。
+3. **「アグリさんに相談する」をクリック** - AI が統合的な診断結果と親身なアドバイスを表示します。
+4. **音声で聴く** - スピーカーボタンを押すと、アグリさんが診断結果を優しく読み上げます。
 
 ## デプロイ (Google Cloud Run)
 
-このアプリは Docker 化されており、Google Cloud Run へのデプロイが可能です。
+このアプリは Docker 化されており、以下のスクリプトを使用して簡単にデプロイできます。
 
-1. **事前準備**:
-   - Google Cloud プロジェクトの作成と `gcloud` CLI の設定。
-   - Cloud Build および Cloud Run API の有効化。
-
-### デプロイ・スクリプト (`deploy_gcp.sh`) の詳細
-   
-   リポジトリに含まれる `deploy_gcp.sh` は、以下の 2 つのステップを自動化します。
-   
-   1.  **Google Cloud Build によるビルド**:
-       - `.env.local` から `GEMINI_API_KEY` を読み込みます。
-       - `cloudbuild.yaml` を使用して、Docker イメージをビルドします。
-       - ビルド時に `--build-arg` を介して API キーを Vite のビルドプロセスに注入します。これで、フロントエンドから API キーが利用可能になります。
-   2.  **Google Cloud Run へのデプロイ**:
-       - ビルドされたイメージを Cloud Run にデプロイします。
-       - `--allow-unauthenticated` フラグにより、公開アクセス可能な状態でサービスを起動します。
-   
-   ```bash
-   chmod +x deploy_gcp.sh
-   ./deploy_gcp.sh
-   ```
-   ※ `.env.local` に設定された `GEMINI_API_KEY` がビルド時に注入されます。
-
-## セキュリティ・ベストプラクティス
-
-このアプリはフロントエンドから直接 Gemini API を呼び出しています。
-
-### 1. API キーの制限 (オプション)
-
-API キーが第三者に盗用されるのを防ぎたい場合は、[Google Cloud Console](https://console.cloud.google.com/apis/credentials) または [Google AI Studio](https://aistudio.google.com/app/apikey) で以下の制限を設定できます。
-
-> [!NOTE]
-> Google Cloud Console にアクセスする際、正しいプロジェクトが選択されているか確認してください。異なるプロジェクトを見ていると、API キーが表示されません。
-
-#### HTTP リファラー制限
-
-「アプリケーションの制限」で「HTTP リファラー」を選択し、許可するドメインを追加できます：
-
-- `http://localhost:3000/*` (ローカル開発用)
-- `https://your-app-name-*.a.run.app/*` (Cloud Run)
-- `https://your-app-name.vercel.app/*` (Vercel)
-- `https://*.vercel.app/*` (Vercel プレビュー用)
-
-#### API の制限
-
-使用できる API を「Gemini API」のみに制限することも可能です。
-
-> [!TIP]
-> HTTP リファラー制限を設定した場合、許可リストにないドメインからのリクエストは `API_KEY_HTTP_REFERRER_BLOCKED` エラーになります。新しい環境にデプロイする際は、そのドメインをリファラー許可リストに追加してください。
-
-### 2. 今後の検討事項 (本格運用向け)
-
-プロジェクトが成長し、より高いセキュリティが必要な場合は、以下の構成への移行を検討してください。
-
-- **バックエンド・プロキシの導入**: Cloud Run 上で API キーを保持し、フロントエンドからのリクエストを中継する仕組み。これにより、ブラウザ側に API キーが露出することを完全に防げます。
-- **Google Cloud Secret Manager**: API キーを Cloud Build や Dockerfile に直接含めるのではなく、Secret Manager から安全に取得する構成。
+```bash
+chmod +x deploy_gcp.sh
+./deploy_gcp.sh
+```
+※ ビルドプロセスにおいて、`.env.local` の API キーが Vite を通じて安全に注入されます。
 
 ## プロジェクト構成
 
 ```
 kobe-agri/
 ├── public/
-│   └── sample/              # サンプル画像・データ
-│       ├── sensor_optimal.json
-│       ├── sensor_dry.csv
-│       └── *.jpeg           # 各種画像
+│   └── architecture.png     # アーキテクチャ図
+│   └── sample/              # サンプル画像・データ (JSON/CSV)
 ├── src/
-├── index.html
-└── package.json
+│   ├── App.tsx              # メインアプリケーション・UI
+│   ├── services/
+│   │   └── geminiService.ts # Gemini API (分析・TTS) 連携ロジック
+│   └── index.css            # TailwindCSS 4 デザイン定義
+├── deep-research.md         # 農業センシングに関する詳細研究資料
+├── FUTURE_IDEAS.md          # 今後のエージェンティック化プラン
+├── Dockerfile               # 実行環境定義
+└── deploy_gcp.sh            # GCP デプロイスクリプト
 ```
 
 ## ライセンス
