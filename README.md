@@ -1,4 +1,4 @@
-# アグリ・アドバイザー (Agri-Advisor)
+# アグリ・アドバイザー
 
 ![Agri-Advisor Architecture](./public/architecture.png)
 
